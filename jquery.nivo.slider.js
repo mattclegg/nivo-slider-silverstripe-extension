@@ -1,11 +1,12 @@
 /*
- * jQuery Nivo Slider v2.0
+ * jQuery Nivo Slider v2.1
  * http://nivo.dev7studios.com
  *
  * Copyright 2010, Gilbert Pellegrom
  * Free to use and abuse under the MIT license.
  * http://www.opensource.org/licenses/mit-license.php
  * 
+ * June 2010 - auto, prev, nav, & control effects and speeds can be set independently, by valZho 
  * May 2010 - Pick random effect from specified set of effects by toronegro
  * May 2010 - controlNavThumbsFromRel option added by nerd-sh
  * May 2010 - Do not start nivoRun timer if there is only 1 slide by msielski
@@ -20,6 +21,22 @@
 		//Defaults are below
 		var settings = $.extend({}, $.fn.nivoSlider.defaults, options);
 
+		// allow "effect" to override all other effect settings
+		if ( options.effect !== undefined ) {
+			settings.autoEffect = options.effect;
+			settings.prevEffect =options.effect;
+			settings.nextEffect =options.effect;
+			settings.controlEffect =options.effect;
+		}
+		
+		// allow "animSpeed" to override all other effect settings
+		if ( options.animSpeed !== undefined ) {
+			settings.autoSpeed = options.animSpeed;
+			settings.prevSpeed =options.animSpeed;
+			settings.nextSpeed =options.animSpeed;
+			settings.controlSpeed =options.animSpeed;
+		}
+		
 		return this.each(function() {
 			//Useful variables. Play carefully.
 			var vars = {
@@ -243,6 +260,25 @@
 		});
 		
 		function nivoRun(slider, kids, settings, nudge){
+			// select the effect and animation speed for the current control type
+			switch (nudge) {
+				case 'prev' :
+					settings.effect = settings.prevEffect;
+					settings.animSpeed = settings.prevSpeed;
+					break;
+				case 'next' :
+					settings.effect = settings.nextEffect;
+					settings.animSpeed = settings.nextSpeed;
+					break;
+				case 'control' :
+					settings.effect = settings.controlEffect;
+					settings.animSpeed = settings.controlSpeed;
+					break;
+				default :
+					settings.effect = settings.autoEffect;
+					settings.animSpeed = settings.autoSpeed;
+			}
+						
 			//Get our vars
 			var vars = slider.data('nivo:vars');
 			if((!vars || vars.stop) && !nudge) return false;
@@ -431,8 +467,16 @@
 	//Default settings
 	$.fn.nivoSlider.defaults = {
 		effect:'random',
-		slices:15,
+		autoEffect:'random',
+		prevEffect:'random',
+		nextEffect:'random',
+		controlEffect:'random',
 		animSpeed:500,
+		autoSpeed:500,
+		prevSpeed:500,
+		nextSpeed:500,
+		controlSpeed:500,
+		slices:15,
 		pauseTime:3000,
 		startSlide:0,
 		directionNav:true,
