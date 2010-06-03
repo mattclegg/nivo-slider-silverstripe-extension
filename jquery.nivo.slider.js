@@ -6,7 +6,8 @@
  * Free to use and abuse under the MIT license.
  * http://www.opensource.org/licenses/mit-license.php
  * 
- * June 2010 - auto, prev, nav, & control effects and speeds can be set independently, by valZho 
+ * June 2010 - background fade out with independent controller settings, by valZho
+ * June 2010 - independent animation settings per controller, by valZho 
  * May 2010 - Pick random effect from specified set of effects by toronegro
  * May 2010 - controlNavThumbsFromRel option added by nerd-sh
  * May 2010 - Do not start nivoRun timer if there is only 1 slide by msielski
@@ -37,25 +38,36 @@
 			settings.controlSpeed =options.animSpeed;
 		}
 		
+		// allow "outSpeed" to override all other effect settings
+		if ( options.outSpeed !== undefined ) {
+			settings.autoOut = options.outSpeed;
+			settings.prevOut =options.outSpeed;
+			settings.nextOut =options.outSpeed;
+			settings.controlOut =options.outSpeed;
+		}
+		
 		return this.each(function() {
 			//Useful variables. Play carefully.
 			var vars = {
+				prevSlide: 0,
 				currentSlide: 0,
 				currentImage: '',
 				totalSlides: 0,
 				randAnim: '',
 				running: false,
 				paused: false,
-				stop:false
+				stop:false,
+				foreFlag:true,
+				backFlag:false
 			};
-		
-			//Get this slider
+			
+			// Get this slider
 			var slider = $(this);
 			slider.data('nivo:vars', vars);
 			slider.css('position','relative');
 			slider.addClass('nivoSlider');
 			
-			//Find our slider children
+// ======= Find our slider children
 			var kids = slider.children();
 			kids.each(function() {
 				var child = $(this);
@@ -68,46 +80,46 @@
 					child = child.find('img:first');
 				}
 				//Get img width & height
-                var childWidth = child.width();
-                if(childWidth == 0) childWidth = child.attr('width');
-                var childHeight = child.height();
-                if(childHeight == 0) childHeight = child.attr('height');
-                //Resize the slider
-                if(childWidth > slider.width()){
-                    slider.width(childWidth);
-                }
-                if(childHeight > slider.height()){
-                    slider.height(childHeight);
-                }
-                if(link != ''){
-                    link.css('display','none');
-                }
-                child.css('display','none');
-                vars.totalSlides++;
+				var childWidth = child.width();
+				if(childWidth == 0) childWidth = child.attr('width');
+				var childHeight = child.height();
+				if(childHeight == 0) childHeight = child.attr('height');
+				//Resize the slider
+				if(childWidth > slider.width()){
+					slider.width(childWidth);
+				}
+				if(childHeight > slider.height()){
+					slider.height(childHeight);
+				}
+				if(link != ''){
+					link.css('display','none');
+				}
+				child.css('display','none');
+				vars.totalSlides++;
 			});
 			
-			//Set startSlide
+// ======= Set startSlide
 			if(settings.startSlide > 0){
 				if(settings.startSlide >= vars.totalSlides) settings.startSlide = vars.totalSlides - 1;
 				vars.currentSlide = settings.startSlide;
+				vars.prevSlide = vars.currentSlide;
 			}
 			
-			//Get initial image
+// ======= Get and Show initial image
 			if($(kids[vars.currentSlide]).is('img')){
 				vars.currentImage = $(kids[vars.currentSlide]);
+				$(kids[vars.currentSlide]).css({display: 'block', opacity:'1.0'});
 			} else {
 				vars.currentImage = $(kids[vars.currentSlide]).find('img:first');
+				$(kids[vars.currentSlide]).find('img:first').css({display: 'block', opacity:'1.0'});
 			}
 			
-			//Show initial link
+// ======= Show initial link
 			if($(kids[vars.currentSlide]).is('a')){
 				$(kids[vars.currentSlide]).css('display','block');
 			}
 			
-			//Set first background
-			slider.css('background','url('+ vars.currentImage.attr('src') +') no-repeat');
-			
-			//Add initial slices
+// ======= Add initial slices
 			for(var i = 0; i < settings.slices; i++){
 				var sliceWidth = Math.round(slider.width()/settings.slices);
 				if(i == settings.slices-1){
@@ -121,23 +133,24 @@
 				}
 			}
 			
-			//Create caption
+// ======= Create captions
 			slider.append(
 				$('<div class="nivo-caption"><p></p></div>').css({ display:'none', opacity:settings.captionOpacity })
 			);			
-			//Process initial  caption
+			// Process initial  caption
 			if(vars.currentImage.attr('title') != ''){
 				$('.nivo-caption p', slider).html(vars.currentImage.attr('title'));					
 				$('.nivo-caption', slider).fadeIn(settings.animSpeed);
 			}
 			
-			//In the words of Super Mario "let's a go!"
+// ======= Set initial timer ... in the words of Super Mario "let's a go!"
 			var timer = 0;
 			if(!settings.manualAdvance && kids.length > 1){
 				timer = setInterval(function(){ nivoRun(slider, kids, settings, false); }, settings.pauseTime);
 			}
 
-			//Add Direction nav
+
+// ======= Add Direction nav
 			if(settings.directionNav){
 				slider.append('<div class="nivo-directionNav"><a class="nivo-prevNav">Prev</a><a class="nivo-nextNav">Next</a></div>');
 				
@@ -167,7 +180,7 @@
 				});
 			}
 			
-			//Add Control nav
+// ======= Add Control nav
 			if(settings.controlNav){
 				var nivoControl = $('<div class="nivo-controlNav"></div>');
 				slider.append(nivoControl);
@@ -187,7 +200,8 @@
 					}
 					
 				}
-				//Set initial active link
+
+				// Set initial active link
 				$('.nivo-controlNav a:eq('+ vars.currentSlide +')', slider).addClass('active');
 				
 				$('.nivo-controlNav a', slider).live('click', function(){
@@ -195,13 +209,12 @@
 					if($(this).hasClass('active')) return false;
 					clearInterval(timer);
 					timer = '';
-					slider.css('background','url('+ vars.currentImage.attr('src') +') no-repeat');
 					vars.currentSlide = $(this).attr('rel') - 1;
 					nivoRun(slider, kids, settings, 'control');
 				});
 			}
 			
-			//Keyboard Navigation
+// ======= Keyboard Navigation
 			if(settings.keyboardNav){
 				$(window).keypress(function(event){
 					//Left
@@ -222,7 +235,7 @@
 				});
 			}
 			
-			//For pauseOnHover setting
+// ======= For pauseOnHover setting
 			if(settings.pauseOnHover){
 				slider.hover(function(){
 					vars.paused = true;
@@ -237,102 +250,138 @@
 				});
 			}
 			
-			//Event when Animation finishes
+// ======= Event when Animation finishes
 			slider.bind('nivo:animFinished', function(){ 
-				vars.running = false; 
-				//Hide child links
-				$(kids).each(function(){
-					if($(this).is('a')){
-						$(this).css('display','none');
+				
+				// only run if both front and back animations are complete
+				if (vars.foreFlag && vars.backFlag) {
+					vars.running = false; 
+					
+					// Hide child links
+					$(kids).each(function(){
+						if($(this).is('a')){
+							$(this).css('display','none');
+						}
+					});
+					
+					// Show current link
+					if($(kids[vars.currentSlide]).is('a')){
+						$(kids[vars.currentSlide]).css({ display:'block', opacity: '1.0' });
 					}
-				});
-				//Show current link
-				if($(kids[vars.currentSlide]).is('a')){
-					$(kids[vars.currentSlide]).css('display','block');
+					
+					// Restart the timer
+					if(timer == '' && !vars.paused && !settings.manualAdvance){
+						timer = setInterval(function(){ nivoRun(slider, kids, settings, false); }, settings.pauseTime);
+					}
+					
+					// Trigger the afterChange callback
+					settings.afterChange.call(this);
 				}
-				//Restart the timer
-				if(timer == '' && !vars.paused && !settings.manualAdvance){
-					timer = setInterval(function(){ nivoRun(slider, kids, settings, false); }, settings.pauseTime);
-				}
-				//Trigger the afterChange callback
-				settings.afterChange.call(this);
 			});
 		});
 		
+
+// ============================================================
+// MAIN FUNCTION
+// ============================================================
+
+
 		function nivoRun(slider, kids, settings, nudge){
 			// select the effect and animation speed for the current control type
+			var effect = settings.autoEffect;
+			var animSpeed = settings.autoSpeed;
+			var outSpeed = settings.autoOut;
 			switch (nudge) {
 				case 'prev' :
-					settings.effect = settings.prevEffect;
-					settings.animSpeed = settings.prevSpeed;
+					effect = settings.prevEffect;
+					animSpeed = settings.prevSpeed;
+					outSpeed = settings.prevOut;
 					break;
 				case 'next' :
-					settings.effect = settings.nextEffect;
-					settings.animSpeed = settings.nextSpeed;
+					effect = settings.nextEffect;
+					animSpeed = settings.nextSpeed;
+					outSpeed = settings.nextOut;
 					break;
 				case 'control' :
-					settings.effect = settings.controlEffect;
-					settings.animSpeed = settings.controlSpeed;
-					break;
-				default :
-					settings.effect = settings.autoEffect;
-					settings.animSpeed = settings.autoSpeed;
+					effect = settings.controlEffect;
+					animSpeed = settings.controlSpeed;
+					outSpeed = settings.controlOut;
+					break;		
 			}
 						
-			//Get our vars
+			// Get our vars
 			var vars = slider.data('nivo:vars');
 			if((!vars || vars.stop) && !nudge) return false;
 			
-			//Trigger the beforeChange callback
+			
+			// Trigger the beforeChange callback
 			settings.beforeChange.call(this);
 					
-			//Set current background before change
-			if(!nudge){
-				slider.css('background','url('+ vars.currentImage.attr('src') +') no-repeat');
-			} else {
-				if(nudge == 'prev'){
-					slider.css('background','url('+ vars.currentImage.attr('src') +') no-repeat');
+// ======= Set current background before change
+			// hide all children (links and images)
+			$(kids).each(function(){
+				$(this).css({display: 'none', opacity:'0'});
+				if($(this).is('a')){
+					$(this).find('img:first').css({display: 'none', opacity:'0'});
 				}
-				if(nudge == 'next'){
-					slider.css('background','url('+ vars.currentImage.attr('src') +') no-repeat');
+			});
+			
+			// show just the current slide
+			if (outSpeed === 'none') {
+				// if we want the background to be persistent, we have to load it into the main div
+				slider.css('background','url('+ vars.currentImage.attr('src') +') no-repeat');
+							
+			} else {
+				
+				// make sure the main div background is empty 
+				slider.css('background','');
+				
+				// load the appropriate image ... the containing anchor has to be shown, too
+				$(kids[vars.prevSlide]).css({display:'block', opacity:'1.0'});
+				if($(kids[vars.prevSlide]).is('a')){
+					$(kids[vars.prevSlide]).find('img:first').css({display:'block', opacity:'1.0'});
 				}
 			}
+				
 			vars.currentSlide++;
 			if(vars.currentSlide == vars.totalSlides){ 
 				vars.currentSlide = 0;
 				//Trigger the slideshowEnd callback
 				settings.slideshowEnd.call(this);
 			}
-			if(vars.currentSlide < 0) vars.currentSlide = (vars.totalSlides - 1);
-			//Set vars.currentImage
+			else if(vars.currentSlide < 0) {
+				vars.currentSlide = (vars.totalSlides - 1);
+			}
+			
+// ======= Set vars.currentImage
 			if($(kids[vars.currentSlide]).is('img')){
 				vars.currentImage = $(kids[vars.currentSlide]);
 			} else {
 				vars.currentImage = $(kids[vars.currentSlide]).find('img:first');
 			}
 			
-			//Set acitve links
+// ======= Set acitve links
 			if(settings.controlNav){
 				$('.nivo-controlNav a', slider).removeClass('active');
 				$('.nivo-controlNav a:eq('+ vars.currentSlide +')', slider).addClass('active');
 			}
 			
-			//Process caption
+// ======= Process caption
 			if(vars.currentImage.attr('title') != ''){
 				if($('.nivo-caption', slider).css('display') == 'block'){
-					$('.nivo-caption p', slider).fadeOut(settings.animSpeed, function(){
+					$('.nivo-caption p', slider).fadeOut(animSpeed, function(){
 						$(this).html(vars.currentImage.attr('title'));
-						$(this).fadeIn(settings.animSpeed);
+						$(this).fadeIn(animSpeed);
 					});
 				} else {
 					$('.nivo-caption p', slider).html(vars.currentImage.attr('title'));
 				}					
-				$('.nivo-caption', slider).fadeIn(settings.animSpeed);
+				$('.nivo-caption', slider).fadeIn(animSpeed);
 			} else {
-				$('.nivo-caption', slider).fadeOut(settings.animSpeed);
+				$('.nivo-caption', slider).fadeOut(animSpeed);
 			}
 			
-			//Set new slice backgrounds
+// ======= Set new slice backgrounds
 			var  i = 0;
 			$('.nivo-slice', slider).each(function(){
 				var sliceWidth = Math.round(slider.width()/settings.slices);
@@ -341,141 +390,200 @@
 				i++;
 			});
 			
-			if(settings.effect == 'random'){
+// ======= Select a random effect
+			if(effect == 'random'){
 				var anims = new Array("sliceDownRight","sliceDownLeft","sliceUpRight","sliceUpLeft","sliceUpDown","sliceUpDownLeft","fold","fade");
 				vars.randAnim = anims[Math.floor(Math.random()*(anims.length + 1))];
 				if(vars.randAnim == undefined) vars.randAnim = 'fade';
 			}
             
-            //Run random effect from specified set (eg: effect:'fold,fade')
-            if(settings.effect.indexOf(',') != -1){
-                var anims = settings.effect.split(',');
+// ======= Select a random effect from a specified list
+            if(effect.indexOf(',') != -1){
+                var anims = effect.split(',');
                 vars.randAnim = $.trim(anims[Math.floor(Math.random()*anims.length)]);
             }
 		
-			//Run effects
+			// Initialize effects run
 			vars.running = true;
-			if(settings.effect == 'sliceDown' || settings.effect == 'sliceDownRight' || vars.randAnim == 'sliceDownRight' ||
-				settings.effect == 'sliceDownLeft' || vars.randAnim == 'sliceDownLeft'){
+			vars.foreFlag = false;
+			vars.backFlag = false;
+			
+// ======= DOWN animation
+			if(effect == 'sliceDown' || effect == 'sliceDownRight' || vars.randAnim == 'sliceDownRight' ||
+				effect == 'sliceDownLeft' || vars.randAnim == 'sliceDownLeft'){
 				var timeBuff = 0;
 				var i = 0;
 				var slices = $('.nivo-slice', slider);
-				if(settings.effect == 'sliceDownLeft' || vars.randAnim == 'sliceDownLeft') slices = $('.nivo-slice', slider).reverse();
+				if(effect == 'sliceDownLeft' || vars.randAnim == 'sliceDownLeft') slices = $('.nivo-slice', slider).reverse();
 				slices.each(function(){
 					var slice = $(this);
+					slice.css('bottom', '');
 					slice.css('top','0px');
 					if(i == settings.slices-1){
 						setTimeout(function(){
-							slice.animate({ height:'100%', opacity:'1.0' }, settings.animSpeed, '', function(){ slider.trigger('nivo:animFinished'); });
+							slice.animate({ height:'100%', opacity:'1.0' }, animSpeed, '', function(){ vars.foreFlag=true; slider.trigger('nivo:animFinished'); });
 						}, (100 + timeBuff));
 					} else {
 						setTimeout(function(){
-							slice.animate({ height:'100%', opacity:'1.0' }, settings.animSpeed);
+							slice.animate({ height:'100%', opacity:'1.0' }, animSpeed);
 						}, (100 + timeBuff));
 					}
 					timeBuff += 50;
 					i++;
 				});
-			} 
-			else if(settings.effect == 'sliceUp' || settings.effect == 'sliceUpRight' || vars.randAnim == 'sliceUpRight' ||
-					settings.effect == 'sliceUpLeft' || vars.randAnim == 'sliceUpLeft'){
+			}
+			
+// ======= UP animation
+			else if(effect == 'sliceUp' || effect == 'sliceUpRight' || vars.randAnim == 'sliceUpRight' ||
+					effect == 'sliceUpLeft' || vars.randAnim == 'sliceUpLeft'){
 				var timeBuff = 0;
 				var i = 0;
 				var slices = $('.nivo-slice', slider);
-				if(settings.effect == 'sliceUpLeft' || vars.randAnim == 'sliceUpLeft') slices = $('.nivo-slice', slider).reverse();
+				if(effect == 'sliceUpLeft' || vars.randAnim == 'sliceUpLeft') slices = $('.nivo-slice', slider).reverse();
 				slices.each(function(){
 					var slice = $(this);
+					slice.css('top', '');
 					slice.css('bottom','0px');
 					if(i == settings.slices-1){
 						setTimeout(function(){
-							slice.animate({ height:'100%', opacity:'1.0' }, settings.animSpeed, '', function(){ slider.trigger('nivo:animFinished'); });
+							slice.animate({ height:'100%', opacity:'1.0' }, animSpeed, '', function(){ vars.foreFlag=true; slider.trigger('nivo:animFinished'); });
 						}, (100 + timeBuff));
 					} else {
 						setTimeout(function(){
-							slice.animate({ height:'100%', opacity:'1.0' }, settings.animSpeed);
+							slice.animate({ height:'100%', opacity:'1.0' }, animSpeed);
 						}, (100 + timeBuff));
 					}
 					timeBuff += 50;
 					i++;
 				});
-			} 
-			else if(settings.effect == 'sliceUpDown' || settings.effect == 'sliceUpDownRight' || vars.randAnim == 'sliceUpDown' || 
-					settings.effect == 'sliceUpDownLeft' || vars.randAnim == 'sliceUpDownLeft'){
+			}
+			
+// ======= UP + DOWN animation
+			else if(effect == 'sliceUpDown' || effect == 'sliceUpDownRight' || vars.randAnim == 'sliceUpDown' || 
+					effect == 'sliceUpDownLeft' || vars.randAnim == 'sliceUpDownLeft'){
 				var timeBuff = 0;
 				var i = 0;
 				var v = 0;
 				var slices = $('.nivo-slice', slider);
-				if(settings.effect == 'sliceUpDownLeft' || vars.randAnim == 'sliceUpDownLeft') slices = $('.nivo-slice', slider).reverse();
+				if(effect == 'sliceUpDownLeft' || vars.randAnim == 'sliceUpDownLeft') slices = $('.nivo-slice', slider).reverse();
 				slices.each(function(){
 					var slice = $(this);
 					if(i == 0){
+						slice.css('bottom', '');
 						slice.css('top','0px');
 						i++;
 					} else {
+						slice.css('top', '');
 						slice.css('bottom','0px');
 						i = 0;
 					}
 					
 					if(v == settings.slices-1){
 						setTimeout(function(){
-							slice.animate({ height:'100%', opacity:'1.0' }, settings.animSpeed, '', function(){ slider.trigger('nivo:animFinished'); });
+							slice.animate({ height:'100%', opacity:'1.0' }, animSpeed, '', function(){ vars.foreFlag=true; slider.trigger('nivo:animFinished'); });
 						}, (100 + timeBuff));
 					} else {
 						setTimeout(function(){
-							slice.animate({ height:'100%', opacity:'1.0' }, settings.animSpeed);
+							slice.animate({ height:'100%', opacity:'1.0' }, animSpeed);
 						}, (100 + timeBuff));
 					}
 					timeBuff += 50;
 					v++;
 				});
-			} 
-			else if(settings.effect == 'fold' || vars.randAnim == 'fold'){
+				
+				
+				
+			}
+			
+// ======= FOLD animation
+			else if(effect == 'fold' || vars.randAnim == 'fold'){
 				var timeBuff = 0;
 				var i = 0;
 				$('.nivo-slice', slider).each(function(){
 					var slice = $(this);
 					var origWidth = slice.width();
+					slice.css('bottom', '');
 					slice.css({ top:'0px', height:'100%', width:'0px' });
 					if(i == settings.slices-1){
 						setTimeout(function(){
-							slice.animate({ width:origWidth, opacity:'1.0' }, settings.animSpeed, '', function(){ slider.trigger('nivo:animFinished'); });
+							slice.animate({ width:origWidth, opacity:'1.0' }, animSpeed, '', function(){ vars.foreFlag=true; slider.trigger('nivo:animFinished'); });
 						}, (100 + timeBuff));
 					} else {
 						setTimeout(function(){
-							slice.animate({ width:origWidth, opacity:'1.0' }, settings.animSpeed);
+							slice.animate({ width:origWidth, opacity:'1.0' }, animSpeed);
 						}, (100 + timeBuff));
 					}
 					timeBuff += 50;
 					i++;
 				});
-			}  
-			else if(settings.effect == 'fade' || vars.randAnim == 'fade'){
+			}
+			
+// ======= FADE animation
+			else if(effect == 'fade' || vars.randAnim == 'fade'){
 				var i = 0;
 				$('.nivo-slice', slider).each(function(){
 					$(this).css('height','100%');
 					if(i == settings.slices-1){
-						$(this).animate({ opacity:'1.0' }, (settings.animSpeed*2), '', function(){ slider.trigger('nivo:animFinished'); });
+						$(this).animate({ opacity:'1.0' }, (animSpeed*2), '', function(){ vars.foreFlag=true; slider.trigger('nivo:animFinished'); });
 					} else {
-						$(this).animate({ opacity:'1.0' }, (settings.animSpeed*2));
+						$(this).animate({ opacity:'1.0' }, (animSpeed*2));
 					}
 					i++;
 				});
 			}
+
+
+// ======= OUT animation ... Fade out background image while bringing in foreground slices		
+			
+			// only animate if necessary
+			if (outSpeed !== 'none') {
+					
+				// if set to 'match' then match the current animation timing
+				if (outSpeed === 'match' ) {
+					if (effect == 'fade') {
+						outSpeed = animSpeed * 2;
+					} else {
+						outSpeed = animSpeed + 100 + timeBuff;
+					}
+				}
+				
+				if (outSpeed < 0 ) { outSpeed = 0; }
+		
+				if ( $(kids[vars.prevSlide]).is('img') ){
+					$(kids[vars.prevSlide]).animate({ opacity:'0' }, outSpeed, '', function(){ vars.backFlag=true; slider.trigger('nivo:animFinished'); } );
+				} else {
+					$(kids[vars.prevSlide]).find('img:first').animate({ opacity:'0' }, outSpeed, '', function(){ vars.backFlag=true; slider.trigger('nivo:animFinished'); } );
+				}
+			} 
+			
+			else { vars.backFlag=true; }
+			
+			
+			// initialize prevSlide for next animation
+			vars.prevSlide = vars.currentSlide;
+			
 		}
 	};
+
+
+// ============================================================
+// ============================================================
+
 	
-	//Default settings
+// ======= Default settings
 	$.fn.nivoSlider.defaults = {
-		effect:'random',
 		autoEffect:'random',
 		prevEffect:'random',
 		nextEffect:'random',
 		controlEffect:'random',
-		animSpeed:500,
 		autoSpeed:500,
 		prevSpeed:500,
 		nextSpeed:500,
 		controlSpeed:500,
+		autoOut: 'none',
+		prevOut: 'none',
+		nextOut: 'none',
+		controlOut: 'none',
 		slices:15,
 		pauseTime:3000,
 		startSlide:0,
