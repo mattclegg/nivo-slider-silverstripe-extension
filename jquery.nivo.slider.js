@@ -305,7 +305,6 @@
 
 
 		function nivoRun(slider, kids, settings, nudge){
-			
 			// Get our vars
 			var vars = slider.data('nivo:vars');
 			if(vars.running || ((!vars || vars.stop) && !nudge)) return false;
@@ -313,14 +312,14 @@
 			// clear the timer
 			clearInterval(timer);
 			timer = '';
-						
+			
 			// select the effect, and animation speed, out speed, and easing for the current control
 			var effect = settings.autoEffect;
 			var animSpeed = settings.autoSpeed;
 			var outSpeed = settings.autoOut;
 			var ease = settings.autoEase;
 			var buffer = settings.autoBuffer;
-			var order = settings.autoOrder;
+			var order = settings.autoOrder.slice(0);
 			
 			switch (nudge) {
 				case 'prev' :
@@ -329,7 +328,7 @@
 					outSpeed = settings.prevOut;
 					ease = settings.prevEase;
 					buffer = settings.prevBuffer;
-					order = settings.prevOrder;
+					order = settings.prevOrder.slice(0);
 					break;
 				case 'next' :
 					effect = settings.nextEffect;
@@ -337,7 +336,7 @@
 					outSpeed = settings.nextOut;
 					ease = settings.nextEase;
 					buffer = settings.nextBuffer;
-					order = settings.nextOrder;
+					order = settings.nextOrder.slice(0);
 					break;
 				case 'control' :
 					effect = settings.controlEffect;
@@ -345,10 +344,9 @@
 					outSpeed = settings.controlOut;
 					ease = settings.controlEase;
 					buffer = settings.nextBuffer;
-					order = settings.controlOrder;
+					order = settings.controlOrder.slice(0);
 					break;		
 			}
-						
 			
 			// Trigger the beforeChange callback
 			settings.beforeChange.call(this);
@@ -491,7 +489,7 @@
 			
 			// left animation reorder
 			if(effect.match(/left/i) || vars.randAnim.match(/left/i)){
-				order.reverse();			
+				order.reverse();
 			}
 			
 			// mix animation reorder
@@ -520,8 +518,6 @@
 				}
 				order = temp;
 			}
-			
-			//alert(order.toString() );
 			
 			// FOREGROUND ANIMATION ... parse through slices
 			slices.each(function(){
@@ -592,7 +588,7 @@
 			// ANIMATION CLEAN-UP TIMER
 			if (matchSpeed < outSpeed) matchSpeed = outSpeed;
 			setTimeout ( function(){	slider.trigger('nivo:animFinished'); }, matchSpeed );
-			
+				
 		};
 	};
 
@@ -657,5 +653,5 @@
 		afterChange: function(){},
 		slideshowEnd: function(){}
 	};
-		
+	
 })(jQuery);
