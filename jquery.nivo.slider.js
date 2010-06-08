@@ -84,7 +84,6 @@
 				currentSlide: 0,
 				currentImage: '',
 				totalSlides: 0,
-				randAnim: '',
 				running: false,
 				paused: false,
 				stop:false
@@ -343,7 +342,7 @@
 					animSpeed = settings.controlSpeed;
 					outSpeed = settings.controlOut;
 					ease = settings.controlEase;
-					buffer = settings.nextBuffer;
+					buffer = settings.controlBuffer;
 					order = settings.controlOrder.slice(0);
 					break;		
 			}
@@ -435,14 +434,15 @@
 					'upDown', 'upDownLeft', 'upDownIn', 'upDownOut', 'upDownMix',
 					'fold', 'foldLeft', 'foldIn', 'foldOut', 'foldMix',
 					'fade');
-				vars.randAnim = anims[Math.floor(Math.random()*(anims.length + 1))];
-				if(vars.randAnim == undefined) vars.randAnim = 'fade';
+				effect = anims[Math.floor(Math.random()*(anims.length + 1))];
+				if(effect == undefined) effect = 'fade';
 			}
             
 			// select a random effect from a specified list
             if(effect.indexOf(',') != -1){
                 var anims = effect.split(',');
-                vars.randAnim = $.trim(anims[Math.floor(Math.random()*anims.length)]);
+                effect = $.trim(anims[Math.floor(Math.random()*anims.length)]);
+                if(effect == undefined) effect = 'fade';
             }
             
             
@@ -463,42 +463,42 @@
 			}
 			
 			// use regex to select animation type (case insensitive)
-			if ( effect.match(/updown/i) || vars.randAnim.match(/updown/i) ){
+			if ( effect.match(/updown/i) ){
 				animType = 'updown';
 				$.extend(animVars.style, {height:'100%'});
 				var alt = 0;
 			
-			} else if ( effect.match(/down/i) || vars.randAnim.match(/down/i) ){
+			} else if ( effect.match(/down/i) ){
 				animType = 'down';
 				$.extend(animVars.style, {height:'100%'});
 			
-			} else if ( effect.match(/up/i) || vars.randAnim.match(/up/i) ){
+			} else if ( effect.match(/up/i) ){
 				animType = 'up';
 				$.extend(animVars.style, {height:'100%'});
 				topCSS = '';
 				bottomCSS = '0';
 			
-			} else if ( effect.match(/fold/i) || vars.randAnim.match(/fold/i) ){
+			} else if ( effect.match(/fold/i) ){
 				animType = 'fold';
 							
-			} else if ( effect.match(/fade/i) || vars.randAnim.match(/fade/i) ){
+			} else if ( effect.match(/fade/i) ){
 				animType = 'fade';
 				animVars.speed = animSpeed*2;
 				buffer = 0;
 			}
 			
 			// left animation reorder
-			if(effect.match(/left/i) || vars.randAnim.match(/left/i)){
+			if(effect.match(/left/i) ){
 				order.reverse();
 			}
 			
 			// mix animation reorder
-			if(effect.match(/mix/i) || vars.randAnim.match(/mix/i)){
+			else if( effect.match(/mix/i) ){
 				order.sort( function(){return (Math.round(Math.random())-0.5);} );
 			}
 			
 			// inward animation reorder
-			else if(effect.match(/in/i) || vars.randAnim.match(/in/i)){
+			else if( effect.match(/in/i) ){
 				var temp = [];
 				for (i=0, n=1; i<settings.slices; i++) {
 					temp[i] = n;
@@ -509,7 +509,7 @@
 			}
 			
 			// outward animation reorder
-			else if(effect.match(/out/i) || vars.randAnim.match(/out/i)){
+			else if( effect.match(/out/i) ){
 				var temp = [];
 				for (i=0, n=Math.ceil(settings.slices/2); i<settings.slices; i++) {
 					temp[i] = n;
