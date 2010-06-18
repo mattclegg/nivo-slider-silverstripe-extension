@@ -143,14 +143,14 @@
 			}
 			
 			
-			// add our slices, and initialize order arrays
+			// add our slices, and initialize order arrays -- hide the slices initially
 			for(var i=0; i<settings.slices; i++){
 				var sliceWidth = Math.round(slider.width()/settings.slices);
 				// final slice might be narrower than the others
 				if(i == settings.slices-1){
-					slider.append( 	$('<div class="nivo-slice"></div>').css({ left:(sliceWidth*i)+'px', width:(slider.width()-(sliceWidth*i))+'px' }) );
+					slider.append( 	$('<div class="nivo-slice"></div>').css({ left:(sliceWidth*i)+'px', width:(slider.width()-(sliceWidth*i))+'px', display: 'none' }) );
 				} else {
-					slider.append( $('<div class="nivo-slice"></div>').css({ left:(sliceWidth*i)+'px', width:sliceWidth+'px' }) );
+					slider.append( $('<div class="nivo-slice"></div>').css({ left:(sliceWidth*i)+'px', width:sliceWidth+'px', display: 'none' }) );
 				}
 				// ensure that order arrays contain enough elements, add elements if necessary
 				if (settings.autoOrder.length < i+1) settings.autoOrder[i] = i;
@@ -203,7 +203,7 @@
 				$('a.nivo-prevNav', slider).live('click', function(){ goToSlide(vars.currentSlide-1, 'prev') });
 				// next button function
 				$('a.nivo-nextNav', slider).live('click', function(){ goToSlide(vars.currentSlide+1, 'next') });
-			}
+			};
 			
 			
 			// KEYBOARD NAVIGATION
@@ -214,7 +214,7 @@
 					// right (next)
 					if(event.keyCode == '39'){ goToSlide(vars.currentSlide+1, 'next'); }
 				});
-			}
+			};
 			
 			
 			// ADD CONTROL NAV
@@ -240,7 +240,7 @@
 				$('.nivo-controlNav a:eq('+ vars.currentSlide +')', slider).addClass('active');
 				// control button function
 				$('.nivo-controlNav a', slider).live('click', function(){ goToSlide( $(this).attr('rel'), 'control') });
-			}
+			};
 			
 			
 			// PAUSE ON HOVER
@@ -256,7 +256,7 @@
 						timer = setInterval(function(){ nivoRun(slider, kids, settings, false); }, settings.pauseTime);
 					}
 				});
-			}
+			};
 			
 
 			// ======================================
@@ -266,15 +266,17 @@
 				
 				// Hide all links
 				$(kids).each(function(){
-					if($(this).is('a')){
-						$(this).css('display','none');
-					}
+					$(this).css('display','none');
 				});
 				
-				// Show current link
+				// Show current link & image
+				$(kids[vars.currentSlide]).css({ display:'block', opacity: '1.0' });
 				if($(kids[vars.currentSlide]).is('a')){
-					$(kids[vars.currentSlide]).css({ display:'block', opacity: '1.0' });
-				}
+					$(kids[vars.currentSlide]).find('img:first').css({ display:'block', opacity: '1.0' });
+				};
+				
+				// hide slices and remove background
+				$('.nivo-slice', slider).css({display:'none', background:''});
 				
 				// free up controls
 				vars.running = false;
@@ -285,7 +287,7 @@
 				// Restart the timer
 				if(timer == '' && !vars.paused && !settings.manualAdvance){
 					timer = setInterval(function(){ nivoRun(slider, kids, settings, false); }, settings.pauseTime );
-				}
+				};
 				
 				// Trigger the afterChange callback
 				settings.afterChange.call(this);
@@ -345,7 +347,7 @@
 					buffer = settings.controlBuffer;
 					order = settings.controlOrder.slice(0);
 					break;		
-			}
+			};
 			
 			// Trigger the beforeChange callback
 			settings.beforeChange.call(this);
@@ -376,35 +378,35 @@
 				$(kids[vars.prevSlide]).css({display:'block', opacity:'1.0'});
 				if($(kids[vars.prevSlide]).is('a')){
 					$(kids[vars.prevSlide]).find('img:first').css({display:'block', opacity:'1.0'});
-				}
-			}
+				};
+			};
 			
 			// advance the current slide reference
 			vars.currentSlide++;
-			if(vars.currentSlide == vars.totalSlides){ 
+			if (vars.currentSlide == vars.totalSlides){ 
 				vars.currentSlide = 0;
 				// if it's the last slide, trigger the slideshowEnd callback
 				settings.slideshowEnd.call(this);
-			}
-			else if(vars.currentSlide < 0) {
+			
+			} else if(vars.currentSlide < 0) {
 				vars.currentSlide = (vars.totalSlides - 1);
-			}
+			};
 			
 			// save the reference to the new current image
-			if($(kids[vars.currentSlide]).is('img')){
+			if ($(kids[vars.currentSlide]).is('img')){
 				vars.currentImage = $(kids[vars.currentSlide]);
 			} else {
 				vars.currentImage = $(kids[vars.currentSlide]).find('img:first');
-			}
+			};
 			
 			// set active links on control nav
-			if(settings.controlNav){
+			if (settings.controlNav){
 				$('.nivo-controlNav a', slider).removeClass('active');
 				$('.nivo-controlNav a:eq('+ vars.currentSlide +')', slider).addClass('active');
-			}
+			};
 			
 			// process the caption
-			if(vars.currentImage.attr('title') != ''){
+			if (vars.currentImage.attr('title') != ''){
 				if($('.nivo-caption', slider).css('display') == 'block'){
 					$('.nivo-caption p', slider).fadeOut(animSpeed, function(){
 						$(this).html(vars.currentImage.attr('title'));
@@ -412,11 +414,11 @@
 					});
 				} else {
 					$('.nivo-caption p', slider).html(vars.currentImage.attr('title'));
-				}					
+				};		
 				$('.nivo-caption', slider).fadeIn(animSpeed);
 			} else {
 				$('.nivo-caption', slider).fadeOut(animSpeed);
-			}
+			};
 			
 			// set new slice backgrounds
 			var  i = 0;
@@ -428,7 +430,7 @@
 			});
 			
 			// if set to random, select a random effect
-			if(effect == 'random'){
+			if (effect == 'random'){
 				var anims = new Array('down', 'downLeft', 'downIn', 'downOut', 'downMix',
 					'up', 'upLeft', 'upIn', 'upOut', 'upMix',
 					'upDown', 'upDownLeft', 'upDownIn', 'upDownOut', 'upDownMix',
@@ -436,14 +438,14 @@
 					'fade');
 				effect = anims[Math.floor(Math.random()*(anims.length + 1))];
 				if(effect == undefined) effect = 'fade';
-			}
+			};
             
 			// select a random effect from a specified list
             if(effect.indexOf(',') != -1){
                 var anims = effect.split(',');
                 effect = $.trim(anims[Math.floor(Math.random()*anims.length)]);
                 if(effect == undefined) effect = 'fade';
-            }
+            };
             
             
 // ======= ANIMATION ENGINE 3.0 !!!
@@ -460,7 +462,7 @@
 				style: { opacity: '1.0' },
 				speed: animSpeed,
 				ease: ease
-			}
+			};
 			
 			// use regex to select animation type (case insensitive)
 			if ( effect.match(/updown/i) ){
@@ -485,20 +487,18 @@
 				animType = 'fade';
 				animVars.speed = animSpeed*2;
 				buffer = 0;
-			}
+			};
 			
 			// left animation reorder
 			if(effect.match(/left/i) ){
 				order.reverse();
-			}
-			
+						
 			// mix animation reorder
-			else if( effect.match(/mix/i) ){
+			} else if( effect.match(/mix/i) ){
 				order.sort( function(){return (Math.round(Math.random())-0.5);} );
-			}
-			
+						
 			// inward animation reorder
-			else if( effect.match(/in/i) ){
+			} else if( effect.match(/in/i) ){
 				var temp = [];
 				for (i=0, n=1; i<settings.slices; i++) {
 					temp[i] = n;
@@ -506,16 +506,18 @@
 					else if ((i+1)>(settings.slices/2)) { n--; }					
 				}
 				order = temp;
-			}
 			
 			// outward animation reorder
-			else if( effect.match(/out/i) ){
+			} else if( effect.match(/out/i) ){
 				var temp = [];
 				for (i=0, n=Math.ceil(settings.slices/2); i<settings.slices; i++) {
 					temp[i] = n;
-					if ((i+1)<(settings.slices/2)) { n--; }
-					else if ((i+1)>(settings.slices/2)) { n++; }					
-				}
+					if ((i+1)<(settings.slices/2)) {
+						n--; 
+					} else if ((i+1)>(settings.slices/2)) {
+						n++;
+					};					
+				};
 				order = temp;
 			}
 			
@@ -551,7 +553,7 @@
 						break;
 						
 					case 'fade' :
-						slice.css({ height: '100%' });
+						slice.css({ height: '100%', display: 'block' });
 						break;
 				}
 				
@@ -582,7 +584,9 @@
 				} else {
 					$(kids[vars.prevSlide]).find('img:first').animate({ opacity:'0' }, outSpeed, ease);
 				}
-			} else { vars.backFlag = true; }
+			} else {
+				vars.backFlag = true;
+			};
 			
 			
 			// ANIMATION CLEAN-UP TIMER
