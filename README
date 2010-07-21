@@ -1,2 +1,42 @@
+###############################################
+nivo-slider-silverstripe-extension
+SS2.4 tested
+###############################################
+
+20 July 2010
+This is a full working version of nivo-slider for silverstripe.
+All relevant Javascript options can be defined in the CMS
+
+
+Maintainer Contact
+-----------------------------------------------
+Matt Clegg <cleggmatt (at) gmail (dot) com>
 Nivo Slider is "The Most Awesome jQuery Image Slider". See http://nivo.dev7studios.com for more info.
-With added settings in SilverStripe
+
+
+Optional Requirements
+-----------------------------------------------
+DataobjectManager
+SimpleTreeDropdownField
+
+
+Installation Instructions
+-----------------------------------------------
+Create a NivoSliderPage & customise Layout/NivoSliderPage.ss (it's all about the interface baby)
+
+
+Known issues
+-----------------------------------------------
+CMS options are a bit mad
+
+
+To Do
+-----------------------------------------------
+
+Tidy up CMS options
+
+Make into a widget? (NivoSliderContainer)
+
+Investigate Javascript Thumbnails
+
+Add a color picker?

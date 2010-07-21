@@ -1,0 +1,5 @@
+<% include NivoSliderContainer %>
+<h2>$Title</h2>
+$Content
+$Form
+$PageComments
