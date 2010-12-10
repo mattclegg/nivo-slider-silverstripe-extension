@@ -23,23 +23,25 @@ class NivoSliderPage extends Page {
 		$f = parent::getCMSFields();
 		
 		if (class_exists('DataObjectManager'))$a='DataObjectManager'; else $a='ComplexTableField';
-		$f->addFieldToTab("Root.Content.Panels", new $a($this,'Panels','NivoSliderPanel',array('Name' => 'Name','Thumbnail' => 'Thumbnail'), 'getCMSFields_forPopup')); 
+		$f->addFieldToTab("Root.Content.Panels", new $a($this,'Panels','NivoSliderPanel',array('Thumbnail' => 'Thumbnail','Title' => 'Name','Tagline' => 'Slogan'), 'getCMSFields_forPopup')); 
 		
 		$f->addFieldToTab('Root.SliderSettings', new CompositeField(
-			new HeaderField("settings","Slider Settings"),
-			new DropdownField('effect',null, singleton('NivoSliderPage')->dbObject('effect')->enumValues()),
-			new TextField('slices','Number of slices'),
-			new TextField('animSpeed','Animation Speed'),
-			new TextField('pauseTime','Display panel time'),
-			new CheckboxField('randomStartSlide', 'Random 1st panel?'),
-			new CheckboxField('directionNav','Show directional Nav?'),
-			new CheckboxField('directionNavHide','Only show on hover?'),
-			new CheckboxField('controlNav','1,2,3...'),
-			new CheckboxField('controlNavThumbs','Thumbs??'),
-			new CheckboxField('keyboardNav','Enable keyboard navigation?'),
-			new CheckboxField('pauseOnHover','Stop animation while hovering?'),
-			new CheckboxField('manualAdvance','Force manual transitions?'),
-			new TextField('captionOpacity','Universal caption opacity 0-1')
+			new LiteralField("wrapper","<div style='margin-left: 50px;'>"),
+				new HeaderField("settings","Slider Settings"),
+				new DropdownField('effect',"Effect", singleton('NivoSliderPage')->dbObject('effect')->enumValues()),
+				new TextField('slices','Number of slices'),
+				new TextField('animSpeed','Animation Speed'),
+				new TextField('pauseTime','Display panel time'),
+				new CheckboxField('randomStartSlide', 'Random 1st panel?'),
+				new CheckboxField('directionNav','Show directional Nav?'),
+				new CheckboxField('directionNavHide','Only show on hover?'),
+				new CheckboxField('controlNav','1,2,3...'),
+				new CheckboxField('controlNavThumbs','Thumbs??'),
+				new CheckboxField('keyboardNav','Enable keyboard navigation?'),
+				new CheckboxField('pauseOnHover','Stop animation while hovering?'),
+				new CheckboxField('manualAdvance','Force manual transitions?'),
+				new TextField('captionOpacity','Universal caption opacity 0-1'),
+			new LiteralField("wrapper_close","</div>")
 		));
 		return $f;
 	}

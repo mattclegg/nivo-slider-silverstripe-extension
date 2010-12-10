@@ -1,7 +1,8 @@
 <?php 
 class NivoSliderPanel extends DataObject {
 	static $db = array (
-		'Name' => 'Text'
+		'Title' => 'Text',
+		'Tagline' => 'Text'
 	);
 
 	static $has_one = array(
@@ -13,12 +14,14 @@ class NivoSliderPanel extends DataObject {
 	static $api_access = true;
 	
 	public function getCMSFields_forPopup(){
-	    if (class_exists('SimpleTreeDropdownField'))$a='SimpleTreeDropdownField'; else $a='HTMLDropdownField';
+	    $image=class_exists('ImageUploadField')?'ImageUploadField':'FileIFrameField';
+	    $tree=class_exists('SimpleTreeDropdownField')?'SimpleTreeDropdownField':'HTMLDropdownField';
 	    
 		return new FieldSet(
-			new TextField('Name'),
-			new FileIFrameField('PanelImage','Slide Image. Note: for optimal results, match image dimensions with panel dimensions.'),
-			new $a("PanelLinkID",_t('RedirectorPage.YOURPAGEJS', "Link Target"),"SiteTree")
+			new TextField('Title'),
+			new TextField('Tagline'),
+			new $image('PanelImage','Slide Image. Note: for optimal results, match image dimensions with panel dimensions.'),
+			new $tree("PanelLinkID",_t('RedirectorPage.YOURPAGEJS', "Link Target"),"SiteTree")
 		);
 	}
 	
