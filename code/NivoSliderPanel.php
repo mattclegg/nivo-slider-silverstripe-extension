@@ -17,10 +17,14 @@ class NivoSliderPanel extends DataObject {
 	    $image=class_exists('ImageUploadField')?'ImageUploadField':'FileIFrameField';
 	    $tree=class_exists('SimpleTreeDropdownField')?'SimpleTreeDropdownField':'HTMLDropdownField';
 	    
+	    $imager=new $image('PanelImage',_t('Image.SINGULARNAME')." Note: for optimal results, match image dimensions with panel dimensions.");
+	    
+	    if($image=='ImageUploadField')$imager->uploadOnSubmit();	    
+	    
 		return new FieldSet(
 			new TextField('Title',_t('SiteTree.METATITLE')),
 			new TextField('Tagline',_t('SiteTree.METADESC')),
-			new $image('PanelImage',_t('Image.SINGULARNAME')." Note: for optimal results, match image dimensions with panel dimensions."),
+			$imager,
 			new $tree("PanelLinkID",_t('RedirectorPage.REDIRECTTOPAGE'),"SiteTree")
 		);
 	}
