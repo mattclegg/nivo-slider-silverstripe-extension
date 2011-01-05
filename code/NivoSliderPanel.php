@@ -7,7 +7,7 @@ class NivoSliderPanel extends DataObject {
 
 	static $has_one = array(
 		'NivoSliderPage' => 'NivoSliderPage',
-		'PanelImage' => 'File',
+		'PanelImage' => 'Image',
     	'PanelLink' => 'SiteTree'
 	);
 	
@@ -18,10 +18,10 @@ class NivoSliderPanel extends DataObject {
 	    $tree=class_exists('SimpleTreeDropdownField')?'SimpleTreeDropdownField':'HTMLDropdownField';
 	    
 		return new FieldSet(
-			new TextField('Title'),
-			new TextField('Tagline'),
-			new $image('PanelImage','Slide Image. Note: for optimal results, match image dimensions with panel dimensions.'),
-			new $tree("PanelLinkID",_t('RedirectorPage.YOURPAGEJS', "Link Target"),"SiteTree")
+			new TextField('Title',_t('SiteTree.METATITLE')),
+			new TextField('Tagline',_t('SiteTree.METADESC')),
+			new $image('PanelImage',_t('Image.SINGULARNAME')." Note: for optimal results, match image dimensions with panel dimensions."),
+			new $tree("PanelLinkID",_t('RedirectorPage.REDIRECTTOPAGE'),"SiteTree")
 		);
 	}
 	

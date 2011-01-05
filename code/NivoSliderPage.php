@@ -23,8 +23,7 @@ class NivoSliderPage extends Page {
 		$f = parent::getCMSFields();
 		
 		if (class_exists('DataObjectManager'))$a='DataObjectManager'; else $a='ComplexTableField';
-		$f->addFieldToTab("Root.Content.Panels", new $a($this,'Panels','NivoSliderPanel',array('Thumbnail' => 'Thumbnail','Title' => 'Name','Tagline' => 'Slogan'), 'getCMSFields_forPopup')); 
-		
+		$f->addFieldToTab("Root.Content.Panels", new $a($this,'Panels','NivoSliderPanel',array('Thumbnail' => _t('Image.PLURALNAME'),'Title' => _t('SiteTree.METATITLE'),'Tagline' => _t('SiteTree.METADESC')), 'getCMSFields_forPopup')); 
 		$f->addFieldToTab('Root.SliderSettings', new CompositeField(
 			new LiteralField("wrapper","<div style='margin-left: 50px;'>"),
 				new HeaderField("settings","Slider Settings"),
@@ -54,7 +53,12 @@ class NivoSliderPage_Controller extends Page_Controller {
 		parent::init();
 		Requirements::css("nivo-slider-silverstripe-extension/css/nivo-slider.css");
 		Requirements::javascript("sapphire/thirdparty/jquery/jquery.js");
-		Requirements::javascript('nivo-slider-silverstripe-extension/javascript/jquery.nivo.slider.pack.js');
+		
+		if (Director::isDev()) {
+			Requirements::javascript("nivo-slider-silverstripe-extension/javascript/jquery.nivo.slider.js");
+		}else{
+			Requirements::javascript("nivo-slider-silverstripe-extension/javascript/jquery.nivo.slider.pack.js");
+		}
 		
 		$a=array();
 		
